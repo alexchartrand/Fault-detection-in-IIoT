@@ -95,5 +95,15 @@ def motorFault(motors, fault):
         i+=1
 
 if __name__ == "__main__":
-    motorDataset = MotorFaultDataset(path.join(FAULT_MOTOR_FOLDER, "result.csv"), FAULT_MOTOR_FOLDER)
-    motorFault(X, Y)
+    motorDataset = MotorFaultDataset(path.join(SIMULATION_MOTOR_FOLDER, "result.csv"), SIMULATION_MOTOR_FOLDER)
+
+    Y = motorDataset.getMotorsData()
+
+    motor1Data = Y[Y["motor"] == 1]
+    motor1Idx = Y["id"].to_numpy()
+
+    data = motorDataset[88]
+    time = range(0, 5001)
+    plt.plot(time, data["data"][SPEED_IDX,:])
+
+    i=0

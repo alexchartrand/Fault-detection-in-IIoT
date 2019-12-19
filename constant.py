@@ -29,3 +29,19 @@ FAULT_TYPE_SHORT = {0: "aucune",
               3: "capteur de courant",
               4: "capteur de tension",
               5: "court-circuit"}
+
+# Use Time
+USE_TIME = False
+
+# Data Index
+TIME_IDX = 0
+CURRANT_IDX = 1
+SPEED_IDX = 2
+VOLTAGE_IDS = 3
+COMMAND_IDX = 5
+
+if not USE_TIME:
+    CURRANT_IDX -= 1
+    SPEED_IDX -= 1
+    VOLTAGE_IDS -= 1
+    COMMAND_IDX -= 1

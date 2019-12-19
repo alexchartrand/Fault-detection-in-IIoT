@@ -3,10 +3,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.ticker import ScalarFormatter,AutoMinorLocator
 #=========================================================== # Directory and filename; style file open #===========================================================
-# Change to the directory which contains the current script
-dirFile = os.path.dirname(os.path.join('YourDirHere','NicePlotProductivity.py'))
 # Load style file
-plt.style.use('PaperDoubleFig.mplstyle')
+plt.style.use('D:\\OneDrive\\Documents\\ETS\\Memoire\\IoT\\Plotting\\PaperDoubleFig.mplstyle')
 # Make some style choices for plotting
 colourWheel =['#329932',
             '#ff6961',
