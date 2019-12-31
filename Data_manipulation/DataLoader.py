@@ -6,7 +6,7 @@ import torch
 import re
 from torch.utils.data import Dataset, DataLoader
 from torchvision import transforms
-import DataTransform
+from torch.utils.data.sampler import SubsetRandomSampler
 
 def getAllcsv(csvFolder):
     return [path.join(csvFolder, f) for f in listdir(csvFolder)
@@ -79,21 +79,28 @@ class MotorFaultDataset(Dataset):
 
         return sample
 
-if __name__ == "__main__":
-    motorDataset = MotorFaultDataset(csv_file=path.join(SIMULATION_MOTOR_FOLDER, "result.csv"),
-                                     root_dir=SIMULATION_MOTOR_FOLDER,
-                                     transform=transforms.Compose([DataTransform.To3DTimeSeries(), DataTransform.ToTensor()]) )
+def createDataLoader(batch_size, transform):
+    motor_train = MotorFaultDataset(csv_file=path.join(SIMULATION_MOTOR_FOLDER, "result.csv"),
+                                         root_dir=SIMULATION_MOTOR_FOLDER,
+                                         transform=transform)
 
-    dataloader = DataLoader(motorDataset, batch_size=4,
-                            shuffle=True, num_workers=4)
+    motor_test = MotorFaultDataset(csv_file=path.join(SIMULATION_TEST_MOTOR_FOLDER, "result.csv"),
+                                         root_dir=SIMULATION_TEST_MOTOR_FOLDER,
+                                         transform=transform)
 
-    for i_batch, sample_batched in enumerate(dataloader):
-        print(i_batch, sample_batched['data'].size(),
-              sample_batched['fault'].size())
+    # Creating data indices for training and validation splits:
+    len_data = len(motor_train)
+    indices = list(range(len_data))
+    id_split = int(0.85 * len_data)
+    np.random.shuffle(indices)
+    train_indices, valid_indices = indices[:id_split], indices[id_split:]
 
-        # observe 4th batch and stop.
-        if i_batch == 3:
-            break
+    # Creating PT data samplers and loaders:
+    train_sampler = SubsetRandomSampler(train_indices)
+    valid_sampler = SubsetRandomSampler(valid_indices)
 
-    print("done")
+    train_loader = DataLoader(motor_train, batch_size=batch_size, sampler=train_sampler, num_workers=4)
+    valid_loader = DataLoader(motor_train, batch_size=batch_size, sampler=valid_sampler, num_workers=4)
+    test_loader = DataLoader(motor_test, batch_size=batch_size, num_workers=4)
+    return train_loader, valid_loader, test_loader
 
