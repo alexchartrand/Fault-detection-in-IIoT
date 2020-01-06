@@ -7,15 +7,15 @@ FIGURE_MODELISATION_FOLDER = path.normpath(path.join(FIGURE_FOLDER, "modelisatio
 FIGURE_CLASSIFICATION_FOLDER = path.normpath(path.join(FIGURE_FOLDER, "classification"))
 
 # Data folders
-DATA_FOLDER = path.normpath("D:\\OneDrive\\Documents\\ETS\\Memoire\\Simulation models\\DCMotorFault\Data")
+DATA_FOLDER = path.normpath("D:\\OneDrive\\Documents\\ETS\\Memoire\\Simulation models\\DCMotorFault\\Data")
 NO_FAULT_MOTOR_FOLDER = path.normpath(path.join(DATA_FOLDER, "no_fault_motor"))
 FAULT_MOTOR_FOLDER = path.normpath(path.join(DATA_FOLDER, "fault_motor"))
 SIMULATION_MOTOR_FOLDER = path.normpath(path.join(DATA_FOLDER, "simulation"))
 SIMULATION_TEST_MOTOR_FOLDER = path.normpath(path.join(SIMULATION_MOTOR_FOLDER, "test"))
 
 # DF save folders
-DATA_SAVE_FOLDER = path.normpath("D:\\OneDrive\\Documents\\ETS\\Memoire\\IoT\\data")
-SAVED_MODEL_FOLDER = path.normpath("D:\\OneDrive\\Documents\\ETS\\Memoire\\IoT\\saved_model")
+#DATA_SAVE_FOLDER = path.normpath("D:\\OneDrive\\Documents\\ETS\\Memoire\\IoT\\data")
+SAVED_MODEL_FOLDER = path.normpath("saved_model")
 
 # Fault type
 FAULT_TYPE = {0: "aucune faute",
