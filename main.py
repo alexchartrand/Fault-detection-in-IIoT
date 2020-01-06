@@ -179,7 +179,7 @@ def main(args):
         DataTransform.ToTensor(),
         DataNormalization.NoramalizeMinMax()])
 
-    train_loader, valid_loader, test_loader = createDataLoader(args.batch_size, motor_transforms)
+    train_loader, valid_loader, test_loader = createDataLoader(args.data_path, args.batch_size, motor_transforms)
 
     if args.train:
         model = trainModel(args, train_loader, valid_loader)
@@ -214,8 +214,5 @@ if __name__ == '__main__':
     parser.add_argument('--data_path', help='Path to data folder')
 
     args = parser.parse_args()
-
-    if args.data_path:
-        DATA_FOLDER = args.data_folder
 
     main(args)

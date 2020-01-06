@@ -79,13 +79,13 @@ class MotorFaultDataset(Dataset):
 
         return sample
 
-def createDataLoader(batch_size, transform):
-    motor_train = MotorFaultDataset(csv_file=path.join(SIMULATION_MOTOR_FOLDER, "result.csv"),
-                                         root_dir=SIMULATION_MOTOR_FOLDER,
+def createDataLoader(dataFolder, batch_size, transform):
+    motor_train = MotorFaultDataset(csv_file=path.join(dataFolder, "simulation", "result.csv"),
+                                         root_dir=path.join(dataFolder, "simulation"),
                                          transform=transform)
 
-    motor_test = MotorFaultDataset(csv_file=path.join(SIMULATION_TEST_MOTOR_FOLDER, "result.csv"),
-                                         root_dir=SIMULATION_TEST_MOTOR_FOLDER,
+    motor_test = MotorFaultDataset(csv_file=path.join(dataFolder, "simulation", "test", "result.csv"),
+                                         root_dir=path.join(dataFolder, "simulation", "test"),
                                          transform=transform)
 
     # Creating data indices for training and validation splits:

@@ -6,13 +6,6 @@ FIGURE_CHAP1_FOLDER = path.join(FIGURE_FOLDER, "revue_litterature")
 FIGURE_MODELISATION_FOLDER = path.join(FIGURE_FOLDER, "modelisation_environnement")
 FIGURE_CLASSIFICATION_FOLDER = path.join(FIGURE_FOLDER, "classification")
 
-# Data folders
-DATA_FOLDER = "D:/OneDrive/Documents/ETS/Memoire/Simulation models/DCMotorFault/Data"
-NO_FAULT_MOTOR_FOLDER = path.join(DATA_FOLDER, "no_fault_motor")
-FAULT_MOTOR_FOLDER = path.join(DATA_FOLDER, "fault_motor")
-SIMULATION_MOTOR_FOLDER = path.join(DATA_FOLDER, "simulation")
-SIMULATION_TEST_MOTOR_FOLDER = path.join(SIMULATION_MOTOR_FOLDER, "test")
-
 # DF save folders
 #DATA_SAVE_FOLDER = path.normpath("D:\\OneDrive\\Documents\\ETS\\Memoire\\IoT\\data")
 SAVED_MODEL_FOLDER = "saved_model"
