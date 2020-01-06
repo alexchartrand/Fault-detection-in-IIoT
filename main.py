@@ -5,10 +5,10 @@ import argparse
 import numpy as np
 import torchvision.transforms
 import matplotlib.pyplot as plt
-from DataLoader import createDataLoader
-import DataTransform
-import  DataNormalization
-from FCNNs import FCNNs
+from Data_manipulation.DataLoader import createDataLoader
+import Data_manipulation.DataTransform as DataTransform
+import  Data_manipulation.DataNormalization as DataNormalization
+from Models.FCNNs import FCNNs
 from os import path, listdir
 from constant import *
 import re
