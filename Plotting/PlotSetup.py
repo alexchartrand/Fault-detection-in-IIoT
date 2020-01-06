@@ -1,11 +1,10 @@
 import os
 import numpy as np
 import matplotlib.pyplot as plt
-from os import path
 from matplotlib.ticker import ScalarFormatter,AutoMinorLocator
 #=========================================================== # Directory and filename; style file open #===========================================================
 # Load style file
-plt.style.use(path.normpath('Plotting\\PaperDoubleFig.mplstyle'))
+plt.style.use('Plotting/PaperDoubleFig.mplstyle')
 # Make some style choices for plotting
 colourWheel =['#329932',
             '#ff6961',
