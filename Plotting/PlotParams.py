@@ -1,6 +1,6 @@
 from constant import  *
-from DataLoader import MotorFaultDataset
-from PlotSetup import *
+from Data_manipulation.DataLoader import MotorFaultDataset
+from Plotting.PlotSetup import *
 
 def showFault(fault):
     fault = fault.groupby("fault").size().values

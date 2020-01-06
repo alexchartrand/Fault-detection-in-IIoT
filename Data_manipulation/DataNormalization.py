@@ -1,10 +1,10 @@
 import numpy as np
 import torch
 from torchvision import transforms
-import DataTransform
-from PlotSetup import *
+import Data_manipulation.DataTransform as DataTransform
+from Plotting.PlotSetup import *
 from constant import  *
-import DataLoader
+import Data_manipulation.DataLoader as DataLoader
 
 class NoramalizeMinMax(object):
     """Normalize data using min max technique"""
