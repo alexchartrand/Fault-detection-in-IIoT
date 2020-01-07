@@ -12,6 +12,7 @@ from Models.FCNNs import FCNNs
 from os import path, listdir
 from constant import *
 import re
+import pickle
 
 cuda = torch.cuda.is_available()
 if cuda:
@@ -76,6 +77,8 @@ def trainModel(args, train_loader, valid_loader):
 
     optimizer = model.getOptimizer()
 
+    print(f'Running model: {args.model} with {args.epoch} epochs')
+
     for e in range(args.epoch):
         print(f'============= EPOCH {e} ========================')
         for batch in train_loader:
@@ -127,6 +130,19 @@ def trainModel(args, train_loader, valid_loader):
         print(" [ACC] TRAIN {} / VALIDATION {}".format(
             train_acc, valid_acc))
 
+    with open(path.join(SAVED_CURVE_FOLDER, f'{args.model}_learning_curve_nll_train.pkl'), 'wb') as fp:
+        pickle.dump(learning_curve_nll_train, fp)
+
+    with open(path.join(SAVED_CURVE_FOLDER, f'{args.model}_learning_curve_nll_valid.pkl'), 'wb') as fp:
+        pickle.dump(learning_curve_nll_valid, fp)
+
+    with open(path.join(SAVED_CURVE_FOLDER, f'{args.model}_learning_curve_acc_train.pkl'), 'wb') as fp:
+        pickle.dump(learning_curve_acc_train, fp)
+
+    with open(path.join(SAVED_CURVE_FOLDER, f'{args.model}_learning_curve_acc_valid.pkl'), 'wb') as fp:
+        pickle.dump(learning_curve_acc_valid, fp)
+
+
     f, (ax1, ax2) = plt.subplots(2, 1)
     ax1.plot(learning_curve_nll_train, label='train')
     ax1.plot(learning_curve_nll_valid, label='validation')
@@ -157,6 +173,8 @@ def loadModel(modelType):
     modelPath = selectBestModel(modelType)
     model.load_state_dict(torch.load(modelPath))
     model.eval()
+
+    print(f'Model loaded: {modelPath}')
     return model
 
 def selectBestModel(modelType):
@@ -176,10 +194,11 @@ def selectBestModel(modelType):
 
 def main(args):
     motor_transforms = torchvision.transforms.Compose([
-        DataTransform.ToTensor(),
-        DataNormalization.NoramalizeMinMax()])
+        DataTransform.ToTensor()])
 
     train_loader, valid_loader, test_loader = createDataLoader(args.data_path, args.batch_size, motor_transforms)
+
+    print(f'Train size: {len(train_loader)*args.batch_size}, Valid size: {len(valid_loader)*args.batch_size}, Test size: {len(test_loader)*args.batch_size}')
 
     if args.train:
         model = trainModel(args, train_loader, valid_loader)

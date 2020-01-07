@@ -5,7 +5,6 @@ import pandas as pd
 import torch
 import re
 from torch.utils.data import Dataset, DataLoader
-from torchvision import transforms
 from torch.utils.data.sampler import SubsetRandomSampler
 
 def getAllcsv(csvFolder):
@@ -29,6 +28,11 @@ class MotorFaultDataset(Dataset):
         self.root_dir = root_dir
         self.transform = transform
         self._motorMinMax = self._loadMotorsMinMax()
+
+        # caching section
+        shared_array_base = [None] * self.motors.shape[0]
+        self.shared_array = shared_array_base
+        self.use_cache = False
 
     @staticmethod
     def _generateFileName(index):
@@ -54,12 +58,27 @@ class MotorFaultDataset(Dataset):
     def getMotorsData(self):
         return self.motors
 
+    def set_use_cache(self, use_cache):
+        self.use_cache = use_cache
+
     def __len__(self):
         return self.motors.shape[0]
 
     def __getitem__(self, idx):
         if torch.is_tensor(idx):
             idx = idx.tolist()
+
+        if self.use_cache and self.shared_array[idx]:
+            return self.shared_array[idx]
+
+        sample = self.getSample(idx)
+
+        if self.use_cache:
+            self.shared_array[idx] = sample
+
+        return sample
+
+    def getSample(self, idx):
 
         motor_name = path.join(self.root_dir,
                              self.motors.iloc[idx]["file_name"])
@@ -83,7 +102,7 @@ def createDataLoader(dataFolder, batch_size, transform):
     motor_train = MotorFaultDataset(csv_file=path.join(dataFolder, "simulation", "result.csv"),
                                          root_dir=path.join(dataFolder, "simulation"),
                                          transform=transform)
-
+    motor_train.set_use_cache(True)
     motor_test = MotorFaultDataset(csv_file=path.join(dataFolder, "simulation", "test", "result.csv"),
                                          root_dir=path.join(dataFolder, "simulation", "test"),
                                          transform=transform)
@@ -99,8 +118,8 @@ def createDataLoader(dataFolder, batch_size, transform):
     train_sampler = SubsetRandomSampler(train_indices)
     valid_sampler = SubsetRandomSampler(valid_indices)
 
-    train_loader = DataLoader(motor_train, batch_size=batch_size, sampler=train_sampler, num_workers=4)
-    valid_loader = DataLoader(motor_train, batch_size=batch_size, sampler=valid_sampler, num_workers=4)
+    train_loader = DataLoader(motor_train, batch_size=batch_size, sampler=train_sampler, num_workers=0)
+    valid_loader = DataLoader(motor_train, batch_size=batch_size, sampler=valid_sampler, num_workers=0)
     test_loader = DataLoader(motor_test, batch_size=batch_size, num_workers=4)
     return train_loader, valid_loader, test_loader
 

@@ -9,6 +9,7 @@ FIGURE_CLASSIFICATION_FOLDER = path.join(FIGURE_FOLDER, "classification")
 # DF save folders
 #DATA_SAVE_FOLDER = path.normpath("D:\\OneDrive\\Documents\\ETS\\Memoire\\IoT\\data")
 SAVED_MODEL_FOLDER = "saved_model"
+SAVED_CURVE_FOLDER = "saved_curve"
 
 # Fault type
 FAULT_TYPE = {0: "aucune faute",
