@@ -14,6 +14,8 @@ from constant import *
 import re
 import pickle
 
+#%matplotlib inline
+
 cuda = torch.cuda.is_available()
 if cuda:
     print("Running model on GPU")

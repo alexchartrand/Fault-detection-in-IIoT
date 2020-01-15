@@ -14,10 +14,10 @@ class FCNNs(nn.Module):
 
         #self.activation = nn.Softmax(dim=1) # This is include in the loss
         self.net = nn.Sequential(FCNNsBlock(in_feature, 128, 8),
-                                  FCNNsBlock(128, 256, 5),
-                                  FCNNsBlock(256, 128, 3),
-                                  FCNNsBlock(128, out_feature, 3),
-                                  GAP())
+                                FCNNsBlock(128, 256, 5),
+                                FCNNsBlock(256, 128, 3),
+                                GAP(),
+                                nn.Linear(128, out_feature))
 
     def forward(self, x):
         return self.net(x)
