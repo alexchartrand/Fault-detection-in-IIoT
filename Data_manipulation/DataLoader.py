@@ -98,28 +98,38 @@ class MotorFaultDataset(Dataset):
 
         return sample
 
-def createDataLoader(dataFolder, batch_size, transform):
+def createTrainDataLoader(dataFolder, batch_size, transform, use_cache):
     motor_train = MotorFaultDataset(csv_file=path.join(dataFolder, "simulation", "result.csv"),
                                          root_dir=path.join(dataFolder, "simulation"),
                                          transform=transform)
-    motor_train.set_use_cache(True)
-    motor_test = MotorFaultDataset(csv_file=path.join(dataFolder, "simulation", "test", "result.csv"),
-                                         root_dir=path.join(dataFolder, "simulation", "test"),
-                                         transform=transform)
+    motor_train.set_use_cache(use_cache)
 
     # Creating data indices for training and validation splits:
     len_data = len(motor_train)
     indices = list(range(len_data))
-    id_split = int(0.85 * len_data)
-    np.random.shuffle(indices)
-    train_indices, valid_indices = indices[:id_split], indices[id_split:]
+    #id_split = int(0.85 * len_data)
+    #np.random.shuffle(indices)
+    #train_indices, valid_indices = indices[:id_split], indices[id_split:]
 
     # Creating PT data samplers and loaders:
-    train_sampler = SubsetRandomSampler(train_indices)
-    valid_sampler = SubsetRandomSampler(valid_indices)
+    number_of_data_per_motor = 2000
+    train_sampler = SubsetRandomSampler(indices[:2*number_of_data_per_motor-1])
+    valid_sampler = SubsetRandomSampler(indices[2*number_of_data_per_motor:])
 
-    train_loader = DataLoader(motor_train, batch_size=batch_size, sampler=train_sampler, num_workers=0)
-    valid_loader = DataLoader(motor_train, batch_size=batch_size, sampler=valid_sampler, num_workers=0)
+    num_worker = 4
+    if [use_cache]:
+        num_worker = 0
+
+    train_loader = DataLoader(motor_train, batch_size=batch_size, sampler=train_sampler, num_workers=num_worker)
+    valid_loader = DataLoader(motor_train, batch_size=batch_size, sampler=valid_sampler, num_workers=num_worker)
+    return train_loader, valid_loader
+
+def createTestDataLoader(dataFolder, batch_size, transform):
+
+    motor_test = MotorFaultDataset(csv_file=path.join(dataFolder, "simulation", "test", "result.csv"),
+                                         root_dir=path.join(dataFolder, "simulation", "test"),
+                                         transform=transform)
+
     test_loader = DataLoader(motor_test, batch_size=batch_size, num_workers=4)
-    return train_loader, valid_loader, test_loader
+    return test_loader
 

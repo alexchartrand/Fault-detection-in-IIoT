@@ -5,7 +5,7 @@ import argparse
 import numpy as np
 import torchvision.transforms
 import matplotlib.pyplot as plt
-from Data_manipulation.DataLoader import createDataLoader
+from Data_manipulation.DataLoader import createTrainDataLoader, createTestDataLoader
 import Data_manipulation.DataTransform as DataTransform
 import  Data_manipulation.DataNormalization as DataNormalization
 from Models.FCNNs import FCNNs
@@ -13,6 +13,7 @@ from os import path, listdir
 from constant import *
 import re
 import pickle
+from Plotting.PlotResult import plot_curve
 
 #%matplotlib inline
 
@@ -25,7 +26,7 @@ else:
 ## Sets hyper_param
 data_size = (4,5001)
 number_of_class = 6
-number_of_sensors = 4
+number_of_sensors = 3
 store_every = 200
 criterion = nn.CrossEntropyLoss() # to compute the loss
 
@@ -53,8 +54,6 @@ def evaluate(model, dataset_loader, eval_fn):
         LOSSES += loss.sum().data.cpu().numpy() * n
         COUNTER += n
 
-    model.train()
-
     return LOSSES / float(COUNTER)
 
 def trainModel(args, train_loader, valid_loader):
@@ -76,7 +75,7 @@ def trainModel(args, train_loader, valid_loader):
 
     if cuda:
         model = model.cuda()
-
+    model.train()
     optimizer = model.getOptimizer()
 
     print(f'Running model: {args.model} with {args.epoch} epochs')
@@ -124,7 +123,7 @@ def trainModel(args, train_loader, valid_loader):
         if args.save_best:
             if round(valid_acc, 3) > best_acc:
                 best_acc = round(valid_acc, 3)
-                torch.save(model.state_dict(), path.join(SAVED_MODEL_FOLDER, f'{args.model}_acc_{best_acc}.pth'))
+                torch.save(model.state_dict(), path.join(SAVED_MODEL_FOLDER, f'{args.model}_acc_{best_acc}_bsize_{args.batch_size}.pth'))
                 print('saved model')
 
         print(" [NLL] TRAIN {} / VALIDATION {}".format(
@@ -144,23 +143,7 @@ def trainModel(args, train_loader, valid_loader):
     with open(path.join(SAVED_CURVE_FOLDER, f'{args.model}_learning_curve_acc_valid.pkl'), 'wb') as fp:
         pickle.dump(learning_curve_acc_valid, fp)
 
-
-    f, (ax1, ax2) = plt.subplots(2, 1)
-    ax1.plot(learning_curve_nll_train, label='train')
-    ax1.plot(learning_curve_nll_valid, label='validation')
-    ax1.legend(bbox_to_anchor=(1, 1), loc=2)
-    ax1.set_title('Negative Log_likelihood')
-    ax1.set_xlabel('Epoch')
-
-    ax2.plot(learning_curve_acc_train, label='train')
-    ax2.plot(learning_curve_acc_valid, label='validation')
-    ax2.legend(bbox_to_anchor=(1, 1), loc=2)
-    ax2.set_title('Accuracy')
-    ax2.set_xlabel('Epoch')
-
-    plt.tight_layout()
-    plt.show()
-
+    plot_curve(learning_curve_acc_train, learning_curve_acc_valid, learning_curve_nll_train, learning_curve_nll_valid)
     return model
 
 def loadModel(modelType):
@@ -196,17 +179,17 @@ def selectBestModel(modelType):
 
 def main(args):
     motor_transforms = torchvision.transforms.Compose([
-        DataTransform.ToTensor()])
-
-    train_loader, valid_loader, test_loader = createDataLoader(args.data_path, args.batch_size, motor_transforms)
-
-    print(f'Train size: {len(train_loader)*args.batch_size}, Valid size: {len(valid_loader)*args.batch_size}, Test size: {len(test_loader)*args.batch_size}')
+        DataTransform.ToTensor(),
+        DataNormalization.NoramalizeMinMax()])
 
     if args.train:
+        train_loader, valid_loader = createTrainDataLoader(args.data_path, args.batch_size, motor_transforms, args.use_cache)
+        print(f'Train size: {len(train_loader) * args.batch_size}, Valid size: {len(valid_loader) * args.batch_size}')
         model = trainModel(args, train_loader, valid_loader)
     elif args.eval:
         model = loadModel(args.model)
-
+        test_loader = createTestDataLoader(args.data_path, args.batch_size, motor_transforms)
+        print(f'Test size: {len(test_loader) * args.batch_size}')
         # Evaluate model
         test_loss = evaluate(model, test_loader, criterion)
         test_acc = evaluate(model, test_loader, accuracy)
@@ -233,6 +216,8 @@ if __name__ == '__main__':
     parser.add_argument('--eval', action='store_true',
                         help='Set model to evaluation')
     parser.add_argument('--data_path', help='Path to data folder')
+    parser.add_argument('--use_cache', action='store_true',
+                        help='Use data caching in dataloader')
 
     args = parser.parse_args()
 
