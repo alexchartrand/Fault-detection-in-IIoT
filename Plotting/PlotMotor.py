@@ -95,7 +95,7 @@ def motorFault(motors, fault):
         i+=1
 
 if __name__ == "__main__":
-    motorDataset = MotorFaultDataset(path.join(SIMULATION_MOTOR_FOLDER, "result.csv"), SIMULATION_MOTOR_FOLDER)
+    motorDataset = MotorFaultDataset(csv_file=path.join(SIMULATION_MOTOR_FOLDER,"simulation", "result.csv"), root_dir=path.join(SIMULATION_MOTOR_FOLDER,"simulation"))
 
     Y = motorDataset.getMotorsData()
 

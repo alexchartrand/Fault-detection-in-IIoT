@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 from matplotlib.ticker import ScalarFormatter,AutoMinorLocator
 #=========================================================== # Directory and filename; style file open #===========================================================
 # Load style file
-plt.style.use('Plotting/PaperDoubleFig.mplstyle')
+plt.style.use('Plotting/PaperDoubleFig.mplstyle') #Plotting/
 # Make some style choices for plotting
 colourWheel =['#329932',
             '#ff6961',

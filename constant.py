@@ -1,10 +1,16 @@
 from os import path
 
+# Root project folder
+ROOT_DIR = "D:/OneDrive/Documents/ETS/Memoire/IoT/"
+
 # Output folders
 FIGURE_FOLDER = "D:/OneDrive/Documents/ETS/Memoire/Rapport/Figures"
 FIGURE_CHAP1_FOLDER = path.join(FIGURE_FOLDER, "revue_litterature")
 FIGURE_MODELISATION_FOLDER = path.join(FIGURE_FOLDER, "modelisation_environnement")
 FIGURE_CLASSIFICATION_FOLDER = path.join(FIGURE_FOLDER, "classification")
+
+# Simulation data
+SIMULATION_MOTOR_FOLDER = "D:/OneDrive/Documents/ETS/Memoire/Simulation models/DCMotorFault/Data"
 
 # DF save folders
 #DATA_SAVE_FOLDER = path.normpath("D:\\OneDrive\\Documents\\ETS\\Memoire\\IoT\\data")
