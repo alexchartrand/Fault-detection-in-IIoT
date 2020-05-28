@@ -4,7 +4,6 @@ import torch.nn as nn
 import argparse
 import numpy as np
 import torchvision.transforms
-import matplotlib.pyplot as plt
 from Data_manipulation.DataLoader import createTrainDataLoader, createTestDataLoader
 import Data_manipulation.DataTransform as DataTransform
 import  Data_manipulation.DataNormalization as DataNormalization
@@ -35,9 +34,10 @@ def accuracy(proba, y):
     correct = torch.eq(res, y).sum().float()
     return correct / y.size(0)
 
-def evaluate(model, dataset_loader, eval_fn):
+def evaluate(model, dataset_loader):
     LOSSES = 0
     COUNTER = 0
+    correct = 0
     model.eval()
     for batch in dataset_loader:
 
@@ -49,12 +49,19 @@ def evaluate(model, dataset_loader, eval_fn):
             x = x.cuda()
             y = y.cuda()
 
-        loss = eval_fn(model(x), y)
         n = y.size(0)
-        LOSSES += loss.sum().data.cpu().numpy() * n
+
+        outputs = model(x)
+        loss = criterion(outputs, y)
+        res = outputs.max(1)[1]
+        correct += torch.eq(res, y).sum().item()
+
+        #LOSSES += loss.sum().data.cpu().numpy()
+        LOSSES += loss.item()
         COUNTER += n
 
-    return LOSSES / float(COUNTER)
+    model.train()
+    return correct/float(COUNTER) * 100, LOSSES/float(COUNTER)
 
 def trainModel(args, train_loader, valid_loader):
     LOSSES = 0
@@ -99,7 +106,7 @@ def trainModel(args, train_loader, valid_loader):
             optimizer.step()
 
             n = y.size(0)
-            LOSSES += loss.sum().data.cpu().numpy() * n
+            LOSSES += loss.item()
             COUNTER += n
             ITERATIONS += 1
 
@@ -110,15 +117,13 @@ def trainModel(args, train_loader, valid_loader):
                 print(" Iteration {}: TRAIN {}".format(
                     ITERATIONS, avg_loss))
 
-        train_loss = evaluate(model, train_loader, criterion)
-        learning_curve_nll_train.append(train_loss)
-        valid_loss = evaluate(model, valid_loader, criterion)
-        learning_curve_nll_valid.append(valid_loss)
+        train_acc, train_loss = evaluate(model, train_loader)
+        valid_acc, valid_loss = evaluate(model, valid_loader)
 
-        train_acc = evaluate(model, train_loader, accuracy)
         learning_curve_acc_train.append(train_acc)
-        valid_acc = evaluate(model, valid_loader, accuracy)
+        learning_curve_nll_train.append(train_loss)
         learning_curve_acc_valid.append(valid_acc)
+        learning_curve_nll_valid.append(valid_loss)
 
         if args.save_best:
             if round(valid_acc, 3) > best_acc:
@@ -143,10 +148,9 @@ def trainModel(args, train_loader, valid_loader):
     with open(path.join(SAVED_CURVE_FOLDER, f'{args.model}_learning_curve_acc_valid.pkl'), 'wb') as fp:
         pickle.dump(learning_curve_acc_valid, fp)
 
-    plot_curve(learning_curve_acc_train, learning_curve_acc_valid, learning_curve_nll_train, learning_curve_nll_valid)
     return model
 
-def loadModel(modelType):
+def loadModel(modelType, model_path):
     if modelType == "FCNN":
         model = FCNNs(number_of_sensors, number_of_class)
     else:
@@ -155,27 +159,10 @@ def loadModel(modelType):
     if cuda:
         model = model.cuda()
 
-    modelPath = selectBestModel(modelType)
-    model.load_state_dict(torch.load(modelPath))
-    model.eval()
+    model.load_state_dict(torch.load(model_path))
 
-    print(f'Model loaded: {modelPath}')
+    print(f'Model loaded: {model_path}')
     return model
-
-def selectBestModel(modelType):
-    regex = r"{}_acc_(\d+\.\d+)\.pth".format(modelType)
-    modelPath = ""
-    maxAccuracy = 0.0
-    modelList = [path.join(SAVED_MODEL_FOLDER, f) for f in listdir(SAVED_MODEL_FOLDER)
-     if path.isfile(path.join(SAVED_MODEL_FOLDER, f)) and re.search(regex, f, re.IGNORECASE)]
-
-    for model in modelList:
-        matches = re.search(regex, model, re.IGNORECASE)
-        acc = float(matches.group(1))
-        if acc > maxAccuracy:
-            modelPath = model
-
-    return modelPath
 
 def main(args):
     motor_transforms = torchvision.transforms.Compose([
@@ -187,12 +174,13 @@ def main(args):
         print(f'Train size: {len(train_loader) * args.batch_size}, Valid size: {len(valid_loader) * args.batch_size}')
         model = trainModel(args, train_loader, valid_loader)
     elif args.eval:
-        model = loadModel(args.model)
-        test_loader = createTestDataLoader(args.data_path, args.batch_size, motor_transforms)
-        print(f'Test size: {len(test_loader) * args.batch_size}')
+        model = loadModel(args.model, args.model_path)
+        #test_loader = createTestDataLoader(args.data_path, args.batch_size, motor_transforms)
+        train_loader, valid_loader = createTrainDataLoader(args.data_path, args.batch_size, motor_transforms,
+                                                           args.use_cache)
+        print(f'Test size: {len(valid_loader) * args.batch_size}')
         # Evaluate model
-        test_loss = evaluate(model, test_loader, criterion)
-        test_acc = evaluate(model, test_loader, accuracy)
+        test_acc, test_loss = evaluate(model, valid_loader)
 
         print("Model evaluation ===================")
         print("Test accuracy: ", str(test_acc))
@@ -216,6 +204,7 @@ if __name__ == '__main__':
     parser.add_argument('--eval', action='store_true',
                         help='Set model to evaluation')
     parser.add_argument('--data_path', help='Path to data folder')
+    parser.add_argument('--model_path', type=str, required=False, help='Path for the model to load')
     parser.add_argument('--use_cache', action='store_true',
                         help='Use data caching in dataloader')
 
