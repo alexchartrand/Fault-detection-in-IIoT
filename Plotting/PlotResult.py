@@ -14,18 +14,18 @@ def plot_curve(acc_train, acc_valid, nll_train, nll_valid):
     axs[0].plot(nll_train, label='Train', color=colourWheel[0], alpha=alphaVal, lw=linethick)
     axs[0].plot(nll_valid, label='Validation', color=colourWheel[1], alpha=alphaVal, lw=linethick)
     axs[0].legend(bbox_to_anchor=(0., 1.02, 1., .102), loc='lower right', ncol=1, handlelength=4)
-    axs[0].set_ylim(0, 15)
+    #axs[0].set_ylim(0, 15)
     axs[0].set_title('Negative Log likelihood')
 
     axs[1].plot(acc_train, label='Train', color=colourWheel[0], alpha=alphaVal, lw=linethick)
     axs[1].plot(acc_valid, label='Validation', color=colourWheel[1], alpha=alphaVal, lw=linethick)
     #axs[1].legend( frameon=False, loc='upper left', ncol=1, handlelength=4) #bbox_to_anchor=(1, 1),
-    axs[1].set_ylim(0, 1)
+    #axs[1].set_ylim(0, 1)
     axs[1].set_title('Accuracy')
 
     for ax in axs.flat:
         ax.set(xlabel='Epoch')
-        ax.set_xlim(0, 20)
+        #ax.set_xlim(0, 20)
         ax.grid(True)
         ax.set_xticks(xticks)
 
@@ -45,21 +45,16 @@ def plot_confusion_matrix(cm, classes,
     This function prints and plots the confusion matrix.
     Normalization can be applied by setting `normalize=True`.
     """
-    plt.figure(figsize=(8, 6))
+    plt.figure(figsize=(8, 6)) #figsize=(8, 6)
     plt.imshow(cm, interpolation='nearest', cmap=cmap)
     plt.title(title)
     plt.colorbar()
-    tick_marks = np.arange(len(classes))
-    plt.xticks(tick_marks, classes, rotation=45, ha="right")
-    plt.yticks(tick_marks, classes)
+    #tick_marks = np.arange(len(classes))
+    #plt.xticks(tick_marks, classes)
+    #plt.yticks(tick_marks, classes)
 
     if normalize:
         cm = cm.astype('float') / cm.sum(axis=1)[:, np.newaxis]
-    # print("Normalized confusion matrix")
-    else:
-        1  # print('Confusion matrix, without normalization')
-
-    # print(cm)
 
     thresh = cm.max() / 2.
     for i, j in itertools.product(range(cm.shape[0]), range(cm.shape[1])):
@@ -70,6 +65,7 @@ def plot_confusion_matrix(cm, classes,
     plt.ylabel('True label')
     plt.xlabel('Predicted label')
     plt.tight_layout()
+    #plt.savefig(path.join(FIGURE_CLASSIFICATION_FOLDER, 'base_model_confusion.png'))
     plt.show()
 
 def plotTrainVsValid():

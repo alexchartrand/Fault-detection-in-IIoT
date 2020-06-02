@@ -61,6 +61,13 @@ class MotorFaultDataset(Dataset):
     def set_use_cache(self, use_cache):
         self.use_cache = use_cache
 
+    def getPlotableData(self, idx):
+        data = self[idx]['data']
+        if torch.is_tensor(data):
+            data = data.cpu().detach().numpy()
+        time_array = np.arange(0, data.shape[1] * T, T)
+        return np.vstack((data, time_array))
+
     def __len__(self):
         return self.motors.shape[0]
 
@@ -85,8 +92,7 @@ class MotorFaultDataset(Dataset):
 
         data = np.genfromtxt(motor_name, delimiter=",", skip_header=1)
         data = np.transpose(data)
-        if not USE_TIME:
-            data = np.delete(data, TIME_IDX, axis=0) # We remove the time variable for simplicity
+        data = np.delete(data, 0, axis=0) # We remove the time variable for simplicity
 
         motor = self.motors.loc[idx, self.motors.columns != "file_name"]
         motor = np.array(motor)

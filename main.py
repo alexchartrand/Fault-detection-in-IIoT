@@ -12,7 +12,7 @@ from os import path, listdir
 from constant import *
 import re
 import pickle
-from Plotting.PlotResult import plot_curve
+from Plotting.PlotResult import plot_confusion_matrix
 
 #%matplotlib inline
 
@@ -39,29 +39,56 @@ def evaluate(model, dataset_loader):
     COUNTER = 0
     correct = 0
     model.eval()
-    for batch in dataset_loader:
+    with torch.no_grad():
+        for batch in dataset_loader:
 
-        x = batch['data']
-        y = batch['fault']
-        y = y[:, 1].long()  # Select the fault dimension
+            x = batch['data']
+            y = batch['fault']
+            y = y[:, 1].long()  # Select the fault dimension
 
-        if cuda:
-            x = x.cuda()
-            y = y.cuda()
+            if cuda:
+                x = x.cuda()
+                y = y.cuda()
 
-        n = y.size(0)
+            n = y.size(0)
 
-        outputs = model(x)
-        loss = criterion(outputs, y)
-        res = outputs.max(1)[1]
-        correct += torch.eq(res, y).sum().item()
+            outputs = model(x)
+            loss = criterion(outputs, y)
+            res = outputs.max(1)[1]
+            correct += torch.eq(res, y).sum().item()
 
-        #LOSSES += loss.sum().data.cpu().numpy()
-        LOSSES += loss.item()
-        COUNTER += n
+            #LOSSES += loss.sum().data.cpu().numpy()
+            LOSSES += loss.item()
+            COUNTER += n
 
     model.train()
     return correct/float(COUNTER) * 100, LOSSES/float(COUNTER)
+
+def confusionMatrix(model, dataset_loader):
+    from sklearn.metrics import confusion_matrix
+    predicted_values = list()
+    true_values = list()
+
+    model.eval()
+    with torch.no_grad():
+        for batch in dataset_loader:
+
+            x = batch['data']
+            y = batch['fault']
+            y = y[:, 1].long()  # Select the fault dimension
+
+            if cuda:
+                x = x.cuda()
+
+            outputs = model(x)
+            predicted = outputs.max(1)[1]
+
+            predicted_values.extend(predicted.cpu().tolist())
+            true_values.extend(y.tolist())
+
+    model.train()
+    return confusion_matrix(np.array(true_values), np.array(predicted_values))
+
 
 def trainModel(args, train_loader, valid_loader):
     LOSSES = 0
@@ -167,7 +194,7 @@ def loadModel(modelType, model_path):
 def main(args):
     motor_transforms = torchvision.transforms.Compose([
         DataTransform.ToTensor(),
-        DataNormalization.NoramalizeMinMax()])
+        DataTransform.Derivative()])
 
     if args.train:
         train_loader, valid_loader = createTrainDataLoader(args.data_path, args.batch_size, motor_transforms, args.use_cache)
@@ -180,6 +207,8 @@ def main(args):
                                                            args.use_cache)
         print(f'Test size: {len(valid_loader) * args.batch_size}')
         # Evaluate model
+        cm = confusionMatrix(model, train_loader)
+        plot_confusion_matrix(cm, list(range(len(FAULT_TYPE))), normalize=True)
         test_acc, test_loss = evaluate(model, valid_loader)
 
         print("Model evaluation ===================")

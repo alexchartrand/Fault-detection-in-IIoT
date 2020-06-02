@@ -32,6 +32,9 @@ FAULT_TYPE_SHORT = {0: "aucune",
               4: "capteur de tension",
               5: "court-circuit"}
 
+# Sampling period
+T=0.001
+
 # Use Time
 USE_TIME = False
 
@@ -39,11 +42,9 @@ USE_TIME = False
 TIME_IDX = 0
 CURRANT_IDX = 1
 SPEED_IDX = 2
-VOLTAGE_IDS = 3
-COMMAND_IDX = 5
+VOLTAGE_IDX = 3
 
 if not USE_TIME:
     CURRANT_IDX -= 1
     SPEED_IDX -= 1
-    VOLTAGE_IDS -= 1
-    COMMAND_IDX -= 1
+    VOLTAGE_IDX -= 1

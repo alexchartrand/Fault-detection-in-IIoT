@@ -27,3 +27,12 @@ class To3DTimeSeries(object):
         data = sample['data']
         sample['data'] = torch.unsqueeze(data, 2)
         return sample
+
+class Derivative(object):
+    """First order derivation of data"""
+
+    def __call__(self, sample):
+        data = sample['data']
+        x_diff = data[:,1:] - data[:,:-1]
+        sample['data'] = x_diff
+        return sample

@@ -1,14 +1,17 @@
 from os import path
+import numpy as np
 from constant import  *
 from Data_manipulation.DataLoader import MotorFaultDataset
+import Data_manipulation.DataNormalization as norm
+import Data_manipulation.DataTransform as tf
 from Plotting.PlotSetup import *
+from torchvision import transforms
 
 
 def plotMotors(motors, yValueName):
     fig, ax = plt.subplots()
 
     alphaVal = 0.75
-    linethick = 2.5
     timeLimit = 1000
 
     for i in range(len(motors)):
@@ -19,7 +22,6 @@ def plotMotors(motors, yValueName):
                 color=colourWheel[i % len(colourWheel)],
                 linestyle='-',
                 dashes=dashesStyles[i % len(dashesStyles)],
-                lw=linethick,
                 label="Motor {}".format(i+1),
                 alpha=alphaVal)
 
@@ -28,35 +30,29 @@ def plotMotors(motors, yValueName):
     plt.grid()
     return fig, ax
 
-def plotMotorFault(motor):
+def plotMotor(motor):
     fig, axs = plt.subplots(3, sharex='col')
 
-    linethick = 2.5
-
-    axs[0].plot(motor["time"]*1000, # second to mS
-            motor["currant"],
-            lw=linethick)
+    axs[0].plot(motor[3]*1000, # second to mS
+            motor[CURRANT_IDX])
     setupAx(axs[0])
     axs[0].set_title('Courant')
     axs[0].set(ylabel='A')
 
-    axs[1].plot(motor["time"]*1000, # second to mS
-            motor["voltage"],
-            lw=linethick)
+    axs[1].plot(motor[3]*1000, # second to mS
+            motor[VOLTAGE_IDX])
     setupAx(axs[1])
     axs[1].set_title('Tension')
     axs[1].set(ylabel='V')
 
-    axs[2].plot(motor["time"]*1000, # second to mS
-            motor["speed"],
-            lw=linethick)
+    axs[2].plot(motor[3]*1000, # second to mS
+            motor[SPEED_IDX])
     setupAx(axs[2])
     axs[2].set_title('Vitesse')
     axs[2].set(ylabel='rad/s')
 
     for ax in axs.flat:
         ax.set(xlabel='Time (ms)')
-        ax.set_xlim(0, 2000)
         ax.grid(True)
 
     # Hide x labels and tick labels for top plots and y ticks for right plots.
@@ -64,6 +60,7 @@ def plotMotorFault(motor):
         ax.label_outer()
 
     return fig, axs
+
 
 def plotMotorsCurrant(motors):
     fig, ax = plotMotors(motors, "currant")
@@ -85,7 +82,7 @@ def plotMotorsSpeed(motors):
 def motorFault(motors, fault):
     i = 0
     for m in motors:
-        fig, axs = plotMotorFault(m)
+        fig, axs = plotMotor(m)
         #fig.suptitle('Simulation du moteur PMDC avec: '+ FAULT_TYPE[fault["fault"][i]], y=1)
         fig.set_size_inches(7.2 ,4.45*1.2)
         #fig.subplots_adjust(wspace=0, hspace=0)
@@ -95,15 +92,22 @@ def motorFault(motors, fault):
         i+=1
 
 if __name__ == "__main__":
-    motorDataset = MotorFaultDataset(csv_file=path.join(SIMULATION_MOTOR_FOLDER,"simulation", "result.csv"), root_dir=path.join(SIMULATION_MOTOR_FOLDER,"simulation"))
+    transform = transforms.Compose([tf.ToTensor(), tf.Derivative(), tf.ToNumpy()])
+    motorDatasetTransform = MotorFaultDataset(csv_file=path.join(SIMULATION_MOTOR_FOLDER, "simulation", "result.csv"),
+                                              root_dir=path.join(SIMULATION_MOTOR_FOLDER,"simulation"),
+                                              transform=transform)
+    motorDataset = MotorFaultDataset(csv_file=path.join(SIMULATION_MOTOR_FOLDER, "simulation", "result.csv"),
+                                              root_dir=path.join(SIMULATION_MOTOR_FOLDER,"simulation"))
 
-    Y = motorDataset.getMotorsData()
+    data = motorDatasetTransform.getPlotableData(2340)
 
-    motor1Data = Y[Y["motor"] == 1]
-    motor1Idx = Y["id"].to_numpy()
+    fig, axs = plotMotor(data)
+    for ax in axs.flat:
+        ax.set_xlim(0, 5000)
+        ax.set_ylim(-1.5, 1.5)
 
-    data = motorDataset[88]
-    time = range(0, 5001)
-    plt.plot(time, data["data"][SPEED_IDX,:])
+    fig.tight_layout()
+    plt.show()
 
-    i=0
+    Y = motorDatasetTransform.getMotorsData()
+
