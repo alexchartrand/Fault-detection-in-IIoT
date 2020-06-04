@@ -8,9 +8,8 @@ from Data_manipulation.DataLoader import createTrainDataLoader, createTestDataLo
 import Data_manipulation.DataTransform as DataTransform
 import  Data_manipulation.DataNormalization as DataNormalization
 from Models.FCNNs import FCNNs
-from os import path, listdir
+from Models.ResNet import ResNet
 from constant import *
-import re
 import pickle
 from Plotting.PlotResult import plot_confusion_matrix
 
@@ -23,9 +22,10 @@ else:
     print("Running model on CPU")
 
 ## Sets hyper_param
-data_size = (4,5001)
+
 number_of_class = 6
 number_of_sensors = 3
+data_size = (number_of_sensors,5001)
 store_every = 200
 criterion = nn.CrossEntropyLoss() # to compute the loss
 
@@ -89,7 +89,6 @@ def confusionMatrix(model, dataset_loader):
     model.train()
     return confusion_matrix(np.array(true_values), np.array(predicted_values))
 
-
 def trainModel(args, train_loader, valid_loader):
     LOSSES = 0
     COUNTER = 0
@@ -104,11 +103,15 @@ def trainModel(args, train_loader, valid_loader):
 
     if args.model == "FCNN":
         model = FCNNs(number_of_sensors, number_of_class)
+    elif args.model == "ResNet":
+        model = ResNet(number_of_sensors, number_of_class)
     else:
         raise Exception("Unknown model type")
 
     if cuda:
         model = model.cuda()
+
+    #showModel(model)
     model.train()
     optimizer = model.getOptimizer()
 
@@ -180,6 +183,8 @@ def trainModel(args, train_loader, valid_loader):
 def loadModel(modelType, model_path):
     if modelType == "FCNN":
         model = FCNNs(number_of_sensors, number_of_class)
+    elif modelType == "ResNet":
+        model = ResNet(number_of_sensors, number_of_class)
     else:
         raise Exception("Unknown model type")
 
@@ -190,6 +195,10 @@ def loadModel(modelType, model_path):
 
     print(f'Model loaded: {model_path}')
     return model
+
+def showModel(model):
+    from torchsummary import summary
+    summary(model, data_size)
 
 def main(args):
     motor_transforms = torchvision.transforms.Compose([
@@ -220,7 +229,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='IoT Simulation')
 
     parser.add_argument('--model', type=str, default='FCNN',
-                        help='Model selection', choices=['FCNN'])
+                        help='Model selection', choices=['FCNN', 'ResNet'])
     parser.add_argument('--batch_size', type=int, default=16,
                         help='Batch size')
     parser.add_argument('--epoch', type=int, default=10,
