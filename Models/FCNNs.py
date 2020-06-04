@@ -4,7 +4,7 @@
 
 import torch.nn as nn
 import torch.optim as optim
-import Utility
+from . import Utility
 
 class FCNNs(nn.Module):
 

@@ -6,7 +6,7 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 import math
-import Utility
+from . import Utility
 
 class ResNet(nn.Module):
 
