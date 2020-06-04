@@ -193,8 +193,7 @@ def loadModel(modelType, model_path):
 
 def main(args):
     motor_transforms = torchvision.transforms.Compose([
-        DataTransform.ToTensor(),
-        DataTransform.Derivative()])
+        DataTransform.ToTensor()])
 
     if args.train:
         train_loader, valid_loader = createTrainDataLoader(args.data_path, args.batch_size, motor_transforms, args.use_cache)
@@ -208,7 +207,7 @@ def main(args):
         print(f'Test size: {len(valid_loader) * args.batch_size}')
         # Evaluate model
         cm = confusionMatrix(model, train_loader)
-        plot_confusion_matrix(cm, list(range(len(FAULT_TYPE))), normalize=True)
+        plot_confusion_matrix(cm, list(range(len(FAULT_TYPE))))
         test_acc, test_loss = evaluate(model, valid_loader)
 
         print("Model evaluation ===================")
