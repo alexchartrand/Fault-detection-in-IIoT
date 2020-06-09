@@ -18,7 +18,6 @@ class Encoder(nn.Module):
         self.block3 = ConvBlock(256, 512, 21)
         self.softmax = nn.Softmax(dim=2)
         self.linear = nn.Linear(int(512/2), out_feature)
-        self.instanceNorm = nn.InstanceNorm1d(out_feature, affine=True)
 
     def forward(self, x):
         x = self.block1(x)
@@ -31,7 +30,7 @@ class Encoder(nn.Module):
         a = self.softmax(a)
         att = (a * h).sum(2)
 
-        return self.instanceNorm(self.linear(att))
+        return self.linear(att)
 
     def getOptimizer(self):
         return optim.SGD(self.parameters(), lr=0.005)

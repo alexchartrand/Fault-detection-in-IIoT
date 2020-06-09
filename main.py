@@ -114,7 +114,7 @@ def trainModel(args, train_loader, valid_loader):
 
     if cuda:
         model = model.cuda()
-        
+
     model.train()
 
     optimizer = model.getOptimizer()
