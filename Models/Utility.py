@@ -15,16 +15,26 @@ class ConvBlock(nn.Module):
 
     def __init__(self, in_channels, out_channels, kernel_size, activation=nn.ReLU()):
         super(ConvBlock, self).__init__()
-        p = (kernel_size-1)/2
-        self.padding = nn.ConstantPad1d((math.floor(p), math.ceil(p)), 0.0)
-        self.conv1 = nn.Conv1d(in_channels, out_channels, kernel_size)
+        self.conv = Conv1DSame(in_channels, out_channels, kernel_size)
         self.bn = nn.BatchNorm1d(out_channels)
         self.activation = activation
 
     def forward(self, x):
-        x = self.padding(x)
-        x = self.conv1(x)
+        x = self.conv(x)
         x = self.bn(x)
         if self.activation is not None:
             x = self.activation(x)
         return x
+
+class Conv1DSame(nn.Module):
+
+    def __init__(self, in_channels, out_channels, kernel_size):
+        super(Conv1DSame, self).__init__()
+        p = (kernel_size-1)/2
+        self.padding = nn.ConstantPad1d((math.floor(p), math.ceil(p)), 0.0)
+        self.conv = nn.Conv1d(in_channels, out_channels, kernel_size)
+
+    def forward(self, x):
+        x =self.padding(x)
+        out = self.conv(x)
+        return  out

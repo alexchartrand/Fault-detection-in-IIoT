@@ -9,9 +9,11 @@ import Data_manipulation.DataTransform as DataTransform
 import  Data_manipulation.DataNormalization as DataNormalization
 from Models.FCNNs import FCNNs
 from Models.ResNet import ResNet
+from Models.Encoder import Encoder
 from constant import *
 import pickle
 from Plotting.PlotResult import plot_confusion_matrix
+import torch.optim as optim
 
 #%matplotlib inline
 
@@ -105,15 +107,20 @@ def trainModel(args, train_loader, valid_loader):
         model = FCNNs(number_of_sensors, number_of_class)
     elif args.model == "ResNet":
         model = ResNet(number_of_sensors, number_of_class)
+    elif args.model == "Encoder":
+        model = Encoder(number_of_sensors, number_of_class)
     else:
         raise Exception("Unknown model type")
 
     if cuda:
         model = model.cuda()
-
-    #showModel(model)
+        
     model.train()
+
     optimizer = model.getOptimizer()
+
+    if args.lr_scheduler:
+        scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, factor=0.33, mode='min', patience=10, min_lr=10e-4, verbose=True)
 
     print(f'Running model: {args.model} with {args.epoch} epochs')
 
@@ -161,10 +168,16 @@ def trainModel(args, train_loader, valid_loader):
                 torch.save(model.state_dict(), path.join(SAVED_MODEL_FOLDER, f'{args.model}_acc_{best_acc}_bsize_{args.batch_size}.pth'))
                 print('saved model')
 
+        if args.lr_scheduler:
+            scheduler.step(valid_loss, e)
+
         print(" [NLL] TRAIN {} / VALIDATION {}".format(
             train_loss, valid_loss))
         print(" [ACC] TRAIN {} / VALIDATION {}".format(
             train_acc, valid_acc))
+
+    torch.save(model.state_dict(),
+               path.join(SAVED_MODEL_FOLDER, f'{args.model}_acc_{best_acc}_bsize_{args.batch_size}_final.pth'))
 
     with open(path.join(SAVED_CURVE_FOLDER, f'{args.model}_learning_curve_nll_train.pkl'), 'wb') as fp:
         pickle.dump(learning_curve_nll_train, fp)
@@ -185,6 +198,8 @@ def loadModel(modelType, model_path):
         model = FCNNs(number_of_sensors, number_of_class)
     elif modelType == "ResNet":
         model = ResNet(number_of_sensors, number_of_class)
+    elif modelType == "Encoder":
+        model = Encoder(number_of_sensors, number_of_class)
     else:
         raise Exception("Unknown model type")
 
@@ -229,13 +244,15 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='IoT Simulation')
 
     parser.add_argument('--model', type=str, default='FCNN',
-                        help='Model selection', choices=['FCNN', 'ResNet'])
+                        help='Model selection', choices=['FCNN', 'ResNet', 'Encoder'])
     parser.add_argument('--batch_size', type=int, default=16,
                         help='Batch size')
     parser.add_argument('--epoch', type=int, default=10,
                         help='Number of epoch')
     parser.add_argument('--train', action='store_true',
                         help='Set model to training')
+    parser.add_argument('--lr_scheduler', action='store_true',
+                        help='Use learning rate scheduler')
     parser.add_argument('--save_best', action='store_true',
                         help='Save the best model while training')
     parser.add_argument('--eval', action='store_true',
