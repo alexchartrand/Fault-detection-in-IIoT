@@ -17,7 +17,7 @@ class CNNGRU(nn.Module):
         self.res3 = ResBlock(36, 36, 3)
         self.res4 = ResBlock(36, 72, 3)
         self.res5 = ResBlock(72, 72, 3)
-        self.gru1 = nn.GRU(input_size=72, hidden_size=self.HIDDEN_SIZE, num_layers=2, bidirectional=True, batch_first=True)
+        self.gru1 = nn.GRU(input_size=72, hidden_size=self.HIDDEN_SIZE, num_layers=4, bidirectional=True, batch_first=True)
         self.bn1 = nn.BatchNorm1d(self.HIDDEN_SIZE*2)
         self.lin1 = nn.Linear(self.HIDDEN_SIZE*2, self.HIDDEN_SIZE)
         self.bn2 = nn.BatchNorm1d(self.HIDDEN_SIZE)
