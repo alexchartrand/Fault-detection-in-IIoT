@@ -10,6 +10,7 @@ import  Data_manipulation.DataNormalization as DataNormalization
 from Models.FCNNs import FCNNs
 from Models.ResNet import ResNet
 from Models.Encoder import Encoder
+from Models.CNNGRU import CNNGRU
 from constant import *
 import pickle
 from Plotting.PlotResult import plot_confusion_matrix
@@ -109,6 +110,8 @@ def trainModel(args, train_loader, valid_loader):
         model = ResNet(number_of_sensors, number_of_class)
     elif args.model == "Encoder":
         model = Encoder(number_of_sensors, number_of_class)
+    elif args.model == "CNN-GRU":
+        model = CNNGRU(number_of_sensors, number_of_class)
     else:
         raise Exception("Unknown model type")
 
@@ -120,7 +123,7 @@ def trainModel(args, train_loader, valid_loader):
     optimizer = model.getOptimizer()
 
     if args.lr_scheduler:
-        scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, factor=0.33, mode='min', patience=10, min_lr=10e-4, verbose=True)
+        scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, factor=0.5, mode='min', patience=10, min_lr=10e-4, verbose=True)
 
     print(f'Running model: {args.model} with {args.epoch} epochs')
 
@@ -140,6 +143,10 @@ def trainModel(args, train_loader, valid_loader):
             pred = model(x)
             loss = criterion(pred, y)
             loss.backward()
+
+            if args.clip:
+                nn.utils.clip_grad_norm_(model.parameters(), 1)
+
             optimizer.step()
 
             n = y.size(0)
@@ -200,6 +207,8 @@ def loadModel(modelType, model_path):
         model = ResNet(number_of_sensors, number_of_class)
     elif modelType == "Encoder":
         model = Encoder(number_of_sensors, number_of_class)
+    elif modelType == "CNN-GRU":
+        model = CNNGRU(number_of_sensors, number_of_class)
     else:
         raise Exception("Unknown model type")
 
@@ -230,8 +239,8 @@ def main(args):
                                                            args.use_cache)
         print(f'Test size: {len(valid_loader) * args.batch_size}')
         # Evaluate model
-        cm = confusionMatrix(model, train_loader)
-        plot_confusion_matrix(cm, list(range(len(FAULT_TYPE))))
+        cm = confusionMatrix(model, valid_loader)
+        plot_confusion_matrix(cm, list(range(len(FAULT_TYPE))), args.model)
         test_acc, test_loss = evaluate(model, valid_loader)
 
         print("Model evaluation ===================")
@@ -239,12 +248,11 @@ def main(args):
         print("Test loss: ", str(test_loss))
 
 
-
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='IoT Simulation')
 
     parser.add_argument('--model', type=str, default='FCNN',
-                        help='Model selection', choices=['FCNN', 'ResNet', 'Encoder'])
+                        help='Model selection', choices=['FCNN', 'ResNet', 'Encoder', 'CNN-GRU'])
     parser.add_argument('--batch_size', type=int, default=16,
                         help='Batch size')
     parser.add_argument('--epoch', type=int, default=10,
@@ -257,6 +265,8 @@ if __name__ == '__main__':
                         help='Save the best model while training')
     parser.add_argument('--eval', action='store_true',
                         help='Set model to evaluation')
+    parser.add_argument('--clip', action='store_true',
+                        help='Clip gradient norm')
     parser.add_argument('--data_path', help='Path to data folder')
     parser.add_argument('--model_path', type=str, required=False, help='Path for the model to load')
     parser.add_argument('--use_cache', action='store_true',

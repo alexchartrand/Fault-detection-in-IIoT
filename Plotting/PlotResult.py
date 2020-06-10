@@ -4,10 +4,7 @@ import itertools
 from os import path
 import pickle
 
-model_name = 'FCNN'
-normalization = 'none'
-
-def plot_curve(acc_train, acc_valid, nll_train, nll_valid):
+def plot_curve(acc_train, acc_valid, nll_train, nll_valid, model_name, normalization='none'):
     alphaVal = 0.75
     linethick = 2.5
 
@@ -40,7 +37,7 @@ def plot_curve(acc_train, acc_valid, nll_train, nll_valid):
     plt.savefig(path.join(FIGURE_CLASSIFICATION_FOLDER, f'{model_name}_{normalization}_train_vs_valid.png'))
     plt.show()
 
-def plot_confusion_matrix(cm, classes,
+def plot_confusion_matrix(cm, classes, model_name, normalization='none',
                           normalize=False,
                           title='Confusion matrix',
                           cmap=plt.cm.Blues):
@@ -72,6 +69,8 @@ def plot_confusion_matrix(cm, classes,
     plt.show()
 
 def plotTrainVsValid():
+    model_name = 'FCNN'
+    normalization = 'none'
 
     with open(path.join(ROOT_DIR, SAVED_CURVE_FOLDER, normalization, f'{model_name}_learning_curve_nll_train.pkl'), 'rb') as fp:
         learning_curve_nll_train = pickle.load(fp)
@@ -85,7 +84,7 @@ def plotTrainVsValid():
     with open(path.join(ROOT_DIR, SAVED_CURVE_FOLDER, normalization, f'{model_name}_learning_curve_acc_valid.pkl'), 'rb') as fp:
         learning_curve_acc_valid = pickle.load(fp)
 
-    plot_curve(learning_curve_acc_train, learning_curve_acc_valid, learning_curve_nll_train, learning_curve_nll_valid)
+    plot_curve(learning_curve_acc_train, learning_curve_acc_valid, learning_curve_nll_train, learning_curve_nll_valid, model_name, normalization)
 
 if __name__ == "__main__":
     plotTrainVsValid()

@@ -28,11 +28,11 @@ class ConvBlock(nn.Module):
 
 class Conv1DSame(nn.Module):
 
-    def __init__(self, in_channels, out_channels, kernel_size):
+    def __init__(self, in_channels, out_channels, kernel_size, groups=1):
         super(Conv1DSame, self).__init__()
         p = (kernel_size-1)/2
         self.padding = nn.ConstantPad1d((math.floor(p), math.ceil(p)), 0.0)
-        self.conv = nn.Conv1d(in_channels, out_channels, kernel_size)
+        self.conv = nn.Conv1d(in_channels, out_channels, kernel_size, groups=groups)
 
     def forward(self, x):
         x =self.padding(x)
