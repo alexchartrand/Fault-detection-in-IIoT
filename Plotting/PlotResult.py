@@ -69,7 +69,7 @@ def plot_confusion_matrix(cm, classes, model_name, normalization='none',
     plt.show()
 
 def plotTrainVsValid():
-    model_name = 'FCNN'
+    model_name = 'ResNet'
     normalization = 'none'
 
     with open(path.join(ROOT_DIR, SAVED_CURVE_FOLDER, normalization, f'{model_name}_learning_curve_nll_train.pkl'), 'rb') as fp:
