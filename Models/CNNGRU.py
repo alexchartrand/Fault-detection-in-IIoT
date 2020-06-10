@@ -8,7 +8,7 @@ from . import Utility
 
 # Inspired by: https://arxiv.org/pdf/1712.07108.pdf
 class CNNGRU(nn.Module):
-    HIDDEN_SIZE = 1024
+    HIDDEN_SIZE = 512
     def __init__(self, in_feature, out_feature):
         super(CNNGRU, self).__init__()
         self.b1 = DownSampleConv(in_feature, 36, 11)
