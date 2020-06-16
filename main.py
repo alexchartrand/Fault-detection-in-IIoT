@@ -102,6 +102,7 @@ def trainModel(args, train_loader, valid_loader):
     learning_curve_nll_valid = list()
     learning_curve_acc_train = list()
     learning_curve_acc_valid = list()
+    learning_curve_gradient = list()
 
     best_acc = -np.inf
 
@@ -126,7 +127,7 @@ def trainModel(args, train_loader, valid_loader):
     optimizer = model.getOptimizer()
 
     if args.lr_scheduler:
-        scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, factor=0.5, mode='min', patience=10, min_lr=10e-4, verbose=True)
+        scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, factor=0.5, mode='min', patience=5, min_lr=10e-4, verbose=True)
 
     print(f'Running model: {args.model} with {args.epoch} epochs')
 
@@ -147,8 +148,9 @@ def trainModel(args, train_loader, valid_loader):
             loss = criterion(pred, y)
             loss.backward()
 
-            if args.clip:
-                nn.utils.clip_grad_norm_(model.parameters(), 1)
+            if args.clip > 0:
+                zzz=0
+                nn.utils.clip_grad_norm_(model.parameters(), args.clip)
 
             optimizer.step()
 
@@ -163,6 +165,9 @@ def trainModel(args, train_loader, valid_loader):
                 COUNTER = 0
                 print(" Iteration {}: TRAIN {}".format(
                     ITERATIONS, avg_loss))
+                grad_norm = getGradientNorm(model)
+                print("Gradient norm: {}".format(grad_norm))
+                learning_curve_gradient.append(grad_norm)
 
         train_acc, train_loss = evaluate(model, train_loader)
         valid_acc, valid_loss = evaluate(model, valid_loader)
@@ -186,20 +191,23 @@ def trainModel(args, train_loader, valid_loader):
         print(" [ACC] TRAIN {} / VALIDATION {}".format(
             train_acc, valid_acc))
 
+        with open(path.join(SAVED_CURVE_FOLDER, f'{args.model}_learning_curve_nll_train.pkl'), 'wb') as fp:
+            pickle.dump(learning_curve_nll_train, fp)
+
+        with open(path.join(SAVED_CURVE_FOLDER, f'{args.model}_learning_curve_nll_valid.pkl'), 'wb') as fp:
+            pickle.dump(learning_curve_nll_valid, fp)
+
+        with open(path.join(SAVED_CURVE_FOLDER, f'{args.model}_learning_curve_acc_train.pkl'), 'wb') as fp:
+            pickle.dump(learning_curve_acc_train, fp)
+
+        with open(path.join(SAVED_CURVE_FOLDER, f'{args.model}_learning_curve_acc_valid.pkl'), 'wb') as fp:
+            pickle.dump(learning_curve_acc_valid, fp)
+
+        with open(path.join(SAVED_CURVE_FOLDER, f'{args.model}_learning_curve_gradient.pkl'), 'wb') as fp:
+            pickle.dump(learning_curve_gradient, fp)
+
     torch.save(model.state_dict(),
-               path.join(SAVED_MODEL_FOLDER, f'{args.model}_acc_{best_acc}_bsize_{args.batch_size}_final.pth'))
-
-    with open(path.join(SAVED_CURVE_FOLDER, f'{args.model}_learning_curve_nll_train.pkl'), 'wb') as fp:
-        pickle.dump(learning_curve_nll_train, fp)
-
-    with open(path.join(SAVED_CURVE_FOLDER, f'{args.model}_learning_curve_nll_valid.pkl'), 'wb') as fp:
-        pickle.dump(learning_curve_nll_valid, fp)
-
-    with open(path.join(SAVED_CURVE_FOLDER, f'{args.model}_learning_curve_acc_train.pkl'), 'wb') as fp:
-        pickle.dump(learning_curve_acc_train, fp)
-
-    with open(path.join(SAVED_CURVE_FOLDER, f'{args.model}_learning_curve_acc_valid.pkl'), 'wb') as fp:
-        pickle.dump(learning_curve_acc_valid, fp)
+               path.join(SAVED_MODEL_FOLDER, f'{args.model}_acc_{valid_acc}_bsize_{args.batch_size}_final.pth'))
 
     return model
 
@@ -228,6 +236,14 @@ def loadModel(modelType, model_path):
 def showModel(model):
     from torchsummary import summary
     summary(model, data_size)
+
+def getGradientNorm(model):
+    total_norm = 0
+    for p in model.parameters():
+        param_norm = p.grad.data.norm(2)
+        total_norm += param_norm.item() ** 2
+    total_norm = total_norm ** (1. / 2)
+    return total_norm
 
 def main(args):
     motor_transforms = torchvision.transforms.Compose([
@@ -270,7 +286,7 @@ if __name__ == '__main__':
                         help='Save the best model while training')
     parser.add_argument('--eval', action='store_true',
                         help='Set model to evaluation')
-    parser.add_argument('--clip', action='store_true',
+    parser.add_argument('--clip', type=float, required=False, default=-1,
                         help='Clip gradient norm')
     parser.add_argument('--data_path', help='Path to data folder')
     parser.add_argument('--model_path', type=str, required=False, help='Path for the model to load')
