@@ -10,7 +10,7 @@ FIGURE_MODELISATION_FOLDER = path.join(FIGURE_FOLDER, "modelisation_environnemen
 FIGURE_CLASSIFICATION_FOLDER = path.join(FIGURE_FOLDER, "classification")
 
 # Simulation data
-SIMULATION_MOTOR_FOLDER = "D:/OneDrive/Documents/ETS/Memoire/Simulation models/DCMotorFault/Data"
+SIMULATION_MOTOR_FOLDER = "C:/Users/alexc/Documents/data/"
 
 # DF save folders
 #DATA_SAVE_FOLDER = path.normpath("D:\\OneDrive\\Documents\\ETS\\Memoire\\IoT\\data")

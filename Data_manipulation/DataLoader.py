@@ -118,7 +118,7 @@ def createTrainDataLoader(dataFolder, batch_size, transform, use_cache):
     #train_indices, valid_indices = indices[:id_split], indices[id_split:]
 
     # Creating PT data samplers and loaders:
-    number_of_data_per_motor = 2000
+    number_of_data_per_motor = 2500
     train_sampler = SubsetRandomSampler(indices[:2*number_of_data_per_motor-1])
     valid_sampler = SubsetRandomSampler(indices[2*number_of_data_per_motor:])
 

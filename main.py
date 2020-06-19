@@ -166,7 +166,7 @@ def trainModel(args, train_loader, valid_loader):
                 print(" Iteration {}: TRAIN {}".format(
                     ITERATIONS, avg_loss))
                 grad_norm = getGradientNorm(model)
-                print("Gradient norm: {}".format(grad_norm))
+                print(" Gradient norm: {}".format(grad_norm))
                 learning_curve_gradient.append(grad_norm)
 
         train_acc, train_loss = evaluate(model, train_loader)
