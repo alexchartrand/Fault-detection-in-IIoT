@@ -1,17 +1,16 @@
 import torch
 import torch.nn as nn
 import torch.optim as optim
+import  torch.functional as F
 
 class LSTM(nn.Module):
     HIDDEN_SIZE = 512
     DROPOUT = 0.1
-    K = 12
+    DOWN_SAMPLE = 10
     def __init__(self, in_feature, out_feature):
         super(LSTM, self).__init__()
-        self.downSample1 = DownSampleConv(in_feature, in_feature * 12, 11)
-        self.dropout1 = nn.Dropout(self.DROPOUT)
-        self.downSample2 = DownSampleConv(36, 36*4, 5)
-        self.lstm = nn.LSTM(36*4, self.HIDDEN_SIZE, num_layers=2, batch_first=True, bidirectional=True, dropout=self.DROPOUT)
+        self.downSample = nn.AvgPool1d(self.DOWN_SAMPLE, self.DOWN_SAMPLE)
+        self.lstm = nn.LSTM(in_feature, self.HIDDEN_SIZE, num_layers=3, batch_first=True, bidirectional=True, dropout=self.DROPOUT)
         self.dropout2 = nn.Dropout(self.DROPOUT)
         self.lin1 = nn.Linear(self.HIDDEN_SIZE*2, self.HIDDEN_SIZE)
         self.dropout3 = nn.Dropout(self.DROPOUT)
@@ -31,8 +30,7 @@ class LSTM(nn.Module):
         nn.init.zeros_(self.lin2.bias)
 
     def forward(self, x):
-        x = self.downSample1(x)
-        x = self.downSample2(self.dropout1(x))
+        x = self.downSample(x)
         rnn_in = x.permute(0, 2, 1)
         rnn_out, _ = self.lstm(rnn_in)
         rnn_out = rnn_out[:, -1, :]
