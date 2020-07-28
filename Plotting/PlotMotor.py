@@ -52,7 +52,7 @@ def plotMotor(motor):
     axs[2].set(ylabel='rad/s')
 
     for ax in axs.flat:
-        ax.set(xlabel='Time (ms)')
+        ax.set(xlabel='Temps (ms)')
         ax.grid(True)
 
     # Hide x labels and tick labels for top plots and y ticks for right plots.

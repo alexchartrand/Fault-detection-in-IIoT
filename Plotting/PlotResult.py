@@ -4,7 +4,7 @@ import itertools
 from os import path
 import pickle
 
-def plot_curve(acc_train, acc_valid, nll_train, nll_valid, model_name, normalization='none'):
+def plot_curve(acc_train, acc_valid, nll_train, nll_valid, model_name):
     alphaVal = 0.75
     linethick = 2.5
 
@@ -25,7 +25,7 @@ def plot_curve(acc_train, acc_valid, nll_train, nll_valid, model_name, normaliza
 
     for ax in axs.flat:
         ax.set(xlabel='Epoch')
-        #ax.set_xlim(0, 20)
+        ax.set_xlim(0, 29)
         ax.grid(True)
         ax.set_xticks(xticks)
 
@@ -34,10 +34,10 @@ def plot_curve(acc_train, acc_valid, nll_train, nll_valid, model_name, normaliza
         ax.label_outer()
 
     plt.tight_layout()
-    plt.savefig(path.join(FIGURE_CLASSIFICATION_FOLDER, f'{model_name}_{normalization}_train_vs_valid.png'))
+    plt.savefig(path.join(FIGURE_CLASSIFICATION_FOLDER, f'{model_name}_train_vs_valid.png'))
     plt.show()
 
-def plot_confusion_matrix(cm, classes, model_name, normalization='none',
+def plot_confusion_matrix(cm, classes, model_name,
                           normalize=False,
                           title='Confusion matrix',
                           cmap=plt.cm.Blues):
@@ -65,26 +65,25 @@ def plot_confusion_matrix(cm, classes, model_name, normalization='none',
     plt.ylabel('True label')
     plt.xlabel('Predicted label')
     plt.tight_layout()
-    plt.savefig(path.join(FIGURE_CLASSIFICATION_FOLDER, f'{model_name}_{normalization}_confusion.png'))
+    plt.savefig(path.join(FIGURE_CLASSIFICATION_FOLDER, f'{model_name}_confusion.png'))
     plt.show()
 
 def plotTrainVsValid():
     model_name = 'ResNet'
-    normalization = 'none'
 
-    with open(path.join(ROOT_DIR, SAVED_CURVE_FOLDER, normalization, f'{model_name}_learning_curve_nll_train.pkl'), 'rb') as fp:
+    with open(path.join(ROOT_DIR, SAVED_CURVE_FOLDER, f'{model_name}_learning_curve_nll_train.pkl'), 'rb') as fp:
         learning_curve_nll_train = pickle.load(fp)
 
-    with open(path.join(ROOT_DIR, SAVED_CURVE_FOLDER, normalization, f'{model_name}_learning_curve_nll_valid.pkl'), 'rb') as fp:
+    with open(path.join(ROOT_DIR, SAVED_CURVE_FOLDER, f'{model_name}_learning_curve_nll_valid.pkl'), 'rb') as fp:
         learning_curve_nll_valid = pickle.load(fp)
 
-    with open(path.join(ROOT_DIR, SAVED_CURVE_FOLDER, normalization, f'{model_name}_learning_curve_acc_train.pkl'), 'rb') as fp:
+    with open(path.join(ROOT_DIR, SAVED_CURVE_FOLDER, f'{model_name}_learning_curve_acc_train.pkl'), 'rb') as fp:
         learning_curve_acc_train = pickle.load(fp)
 
-    with open(path.join(ROOT_DIR, SAVED_CURVE_FOLDER, normalization, f'{model_name}_learning_curve_acc_valid.pkl'), 'rb') as fp:
+    with open(path.join(ROOT_DIR, SAVED_CURVE_FOLDER, f'{model_name}_learning_curve_acc_valid.pkl'), 'rb') as fp:
         learning_curve_acc_valid = pickle.load(fp)
 
-    plot_curve(learning_curve_acc_train, learning_curve_acc_valid, learning_curve_nll_train, learning_curve_nll_valid, model_name, normalization)
+    plot_curve(learning_curve_acc_train, learning_curve_acc_valid, learning_curve_nll_train, learning_curve_nll_valid, model_name)
 
 if __name__ == "__main__":
     plotTrainVsValid()
