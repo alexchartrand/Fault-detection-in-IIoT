@@ -13,9 +13,9 @@ class GAP(nn.Module):
 
 class ConvBlock(nn.Module):
 
-    def __init__(self, in_channels, out_channels, kernel_size, activation=nn.ReLU()):
+    def __init__(self, in_channels, out_channels, kernel_size, activation=nn.ReLU(), groups=1):
         super(ConvBlock, self).__init__()
-        self.conv = Conv1DSame(in_channels, out_channels, kernel_size)
+        self.conv = Conv1DSame(in_channels, out_channels, kernel_size, groups=groups)
         self.bn = nn.BatchNorm1d(out_channels)
         self.activation = activation
 
@@ -28,11 +28,11 @@ class ConvBlock(nn.Module):
 
 class Conv1DSame(nn.Module):
 
-    def __init__(self, in_channels, out_channels, kernel_size, groups=1):
+    def __init__(self, in_channels, out_channels, kernel_size, groups=1, bias=True, stride=1):
         super(Conv1DSame, self).__init__()
         p = (kernel_size-1)/2
         self.padding = nn.ConstantPad1d((math.floor(p), math.ceil(p)), 0.0)
-        self.conv = nn.Conv1d(in_channels, out_channels, kernel_size, groups=groups)
+        self.conv = nn.Conv1d(in_channels, out_channels, kernel_size, groups=groups, bias=bias, stride=stride)
 
     def forward(self, x):
         x =self.padding(x)
