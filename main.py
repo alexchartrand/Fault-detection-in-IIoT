@@ -11,6 +11,7 @@ from Models.FCNNs import FCNNs
 from Models.ResNet import ResNet
 from Models.Encoder import Encoder
 from Models.CNNGRU import CNNGRU
+from Models.CNNGRU_PAR import CNNGRU_PAR
 from Models.LSTM import LSTM
 from constant import *
 import pickle
@@ -114,6 +115,8 @@ def trainModel(args, train_loader, valid_loader):
         model = Encoder(number_of_sensors, number_of_class)
     elif args.model == "CNN-GRU":
         model = CNNGRU(number_of_sensors, number_of_class)
+    elif args.model == "CNN-GRU-PAR":
+        model = CNNGRU_PAR(number_of_sensors, number_of_class)
     elif args.model == "LSTM":
         model = LSTM(number_of_sensors, number_of_class)
     else:
@@ -220,6 +223,8 @@ def loadModel(modelType, model_path):
         model = Encoder(number_of_sensors, number_of_class)
     elif modelType == "CNN-GRU":
         model = CNNGRU(number_of_sensors, number_of_class)
+    elif modelType == "CNN-GRU-PAR":
+        model = CNNGRU_PAR(number_of_sensors, number_of_class)
     elif modelType == "LSTM":
         model = LSTM(number_of_sensors, number_of_class)
     else:
@@ -274,7 +279,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='IoT Simulation')
 
     parser.add_argument('--model', type=str, default='FCNN',
-                        help='Model selection', choices=['FCNN', 'ResNet', 'Encoder', 'CNN-GRU', 'LSTM'])
+                        help='Model selection', choices=['FCNN', 'ResNet', 'Encoder', 'CNN-GRU', 'LSTM', 'CNN-GRU-PAR'])
     parser.add_argument('--batch_size', type=int, default=16,
                         help='Batch size')
     parser.add_argument('--epoch', type=int, default=10,
