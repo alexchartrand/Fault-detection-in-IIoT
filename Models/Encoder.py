@@ -17,23 +17,31 @@ class Encoder(nn.Module):
         self.pool2 = nn.MaxPool1d(2)
         self.block3 = ConvBlock(256, 512, 21)
         self.softmax = nn.Softmax(dim=2)
-        self.linear = nn.Linear(int(512/2), out_feature)
+        self.linear = nn.Linear(256, 256)
+
+        self.instanceNorm = nn.InstanceNorm1d(1250, affine=True)
+        self.linearEnd = nn.Linear(256*1250, out_feature)
 
     def forward(self, x):
         x = self.block1(x)
         x = self.pool1(x)
         x = self.block2(x)
         x = self.pool2(x)
-        out = self.block3(x)
+        x = self.block3(x)
+        x = x.permute(0, 2, 1)
+        attentionData, attentionSoftmax = torch.split(x, int(x.shape[2]/2), dim=2)
+        attentionSoftmax  = self.softmax(attentionSoftmax)
+        # att = (a * h).sum(2)
+        multiply_layer = attentionSoftmax * attentionData
+        dense_layer = self.linear(multiply_layer)
+        dense_layer = nn.Sigmoid()(dense_layer)
+        dense_layer = self.instanceNorm(dense_layer)
 
-        a,h = torch.split(out, int(out.shape[1]/2), dim=1)
-        a = self.softmax(a)
-        att = (a * h).sum(2)
-
-        return self.linear(att)
+        flatten_layer = torch.flatten(dense_layer, start_dim=1)
+        return self.linearEnd(flatten_layer)
 
     def getOptimizer(self):
-        return optim.SGD(self.parameters(), lr=0.005)
+        return optim.Adam(self.parameters(), lr=0.00001)
 
 class ConvBlock(nn.Module):
 
