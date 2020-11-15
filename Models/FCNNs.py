@@ -27,4 +27,4 @@ class FCNNs(nn.Module):
         return h
 
     def getOptimizer(self):
-        return optim.Adam(self.parameters(), lr=0.001, betas=(0.9,0.999),eps=1e-8)
+        return optim.Adam(self.parameters(), lr=0.001, betas=(0.9,0.999),eps=1e-7)

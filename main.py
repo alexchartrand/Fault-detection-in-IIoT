@@ -130,7 +130,7 @@ def trainModel(args, train_loader, valid_loader):
     optimizer = model.getOptimizer()
 
     if args.lr_scheduler:
-        scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, factor=0.5, mode='min', patience=5, min_lr=10e-4, verbose=True)
+        scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, factor=0.5, mode='min', patience=10, min_lr=10e-4, verbose=True)
 
     print(f'Running model: {args.model} with {args.epoch} epochs')
 

@@ -14,8 +14,7 @@ class ResNet(nn.Module):
         super(ResNet, self).__init__()
 
         # self.activation = nn.Softmax(dim=1) # This is include in the loss
-        self.net = nn.Sequential(nn.BatchNorm1d(in_feature),
-                                 ResBlock(in_feature, 64),
+        self.net = nn.Sequential(ResBlock(in_feature, 64),
                                  ResBlock(64, 128),
                                  ResBlock(128, 128),
                                  Utility.GAP(),
@@ -25,28 +24,26 @@ class ResNet(nn.Module):
         return self.net(x)
 
     def getOptimizer(self):
-        return optim.Adam(self.parameters(), lr=0.001, betas=(0.9, 0.999), eps=1e-8)
+        return optim.Adam(self.parameters(), lr=0.001, betas=(0.9, 0.999), eps=1e-7)
 
 class ResBlock(nn.Module):
     def __init__(self, in_channels, out_channels):
         super(ResBlock, self).__init__()
-        self.need_reshape_input = False
-        if in_channels != out_channels:
-            self.need_reshape_input = True
-            self.identityConv = nn.Conv1d(in_channels, out_channels, 1)
 
+        self.identityConv = Utility.Conv1DSame(in_channels, out_channels, 1)
         self.identityBN = nn.BatchNorm1d(out_channels)
+
         self.block1 = Utility.ConvBlock(in_channels, out_channels, 8)
         self.block2 = Utility.ConvBlock(out_channels, out_channels, 5)
         self.block3 = Utility.ConvBlock(out_channels, out_channels, 3, activation=None)
 
     def forward(self, x):
         identity = x
-        if self.need_reshape_input:
-            identity = self.identityConv(identity)
+        identity = self.identityConv(identity)
         identity = self.identityBN(identity)
-        h1 = self.block1(x)
-        h2 = self.block2(h1)
-        h3 = self.block3(h2)
-        y = h3 + identity
+
+        conv_x = self.block1(x)
+        conv_y = self.block2(conv_x)
+        conv_z = self.block3(conv_y)
+        y = conv_z + identity
         return nn.ReLU()(y)
