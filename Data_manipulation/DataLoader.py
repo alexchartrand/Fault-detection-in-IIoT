@@ -105,22 +105,21 @@ class MotorFaultDataset(Dataset):
         return sample
 
 def createTrainDataLoader(dataFolder, batch_size, transform, use_cache):
-    motor_train = MotorFaultDataset(csv_file=path.join(dataFolder, "simulation", "result.csv"),
-                                         root_dir=path.join(dataFolder, "simulation"),
+    motor_train = MotorFaultDataset(csv_file=path.join(dataFolder, "simulation", "train", "result.csv"),
+                                         root_dir=path.join(dataFolder, "simulation", "train"),
                                          transform=transform)
     motor_train.set_use_cache(use_cache)
 
     # Creating data indices for training and validation splits:
     len_data = len(motor_train)
     indices = list(range(len_data))
-    #id_split = int(0.85 * len_data)
-    #np.random.shuffle(indices)
-    #train_indices, valid_indices = indices[:id_split], indices[id_split:]
+    id_split = int(0.85 * len_data)
+    np.random.shuffle(indices)
+    train_indices, valid_indices = indices[:id_split], indices[id_split:]
 
     # Creating PT data samplers and loaders:
-    number_of_data_per_motor = 2500
-    train_sampler = SubsetRandomSampler(indices[:2*number_of_data_per_motor-1])
-    valid_sampler = SubsetRandomSampler(indices[2*number_of_data_per_motor:])
+    train_sampler = SubsetRandomSampler(train_indices)
+    valid_sampler = SubsetRandomSampler(valid_indices)
 
     num_worker = 4
     if [use_cache]:
@@ -135,7 +134,12 @@ def createTestDataLoader(dataFolder, batch_size, transform):
     motor_test = MotorFaultDataset(csv_file=path.join(dataFolder, "simulation", "test", "result.csv"),
                                          root_dir=path.join(dataFolder, "simulation", "test"),
                                          transform=transform)
+    len_data = len(motor_test)
+    indices = list(range(len_data))
+    np.random.shuffle(indices)
 
-    test_loader = DataLoader(motor_test, batch_size=batch_size, num_workers=4)
+    # Creating PT data samplers and loaders:
+    test_sampler = SubsetRandomSampler(indices)
+    test_loader = DataLoader(motor_test, batch_size=batch_size, sampler=test_sampler, num_workers=4)
     return test_loader
 

@@ -26,6 +26,8 @@ if cuda:
 else:
     print("Running model on CPU")
 
+torch.manual_seed(5)
+np.random.seed(5)
 ## Sets hyper_param
 
 number_of_class = 6
