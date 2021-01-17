@@ -11,11 +11,11 @@ class Encoder(nn.Module):
 
         # self.activation = nn.Softmax(dim=1) # This is include in the loss
 
-        self.block1 = ConvBlock(in_feature, 128, 5)
+        self.block1 = ConvBlock(in_feature, 128, 3)
         self.pool1 = nn.MaxPool1d(2)
-        self.block2 = ConvBlock(128, 256, 11)
+        self.block2 = ConvBlock(128, 256, 5)
         self.pool2 = nn.MaxPool1d(2)
-        self.block3 = ConvBlock(256, 512, 21)
+        self.block3 = ConvBlock(256, 512, 7)
         self.softmax = nn.Softmax(dim=2)
         self.linear = nn.Linear(256, 256)
 
