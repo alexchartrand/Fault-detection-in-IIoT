@@ -263,7 +263,7 @@ def main(args):
         model = trainModel(args, train_loader, valid_loader)
     elif args.eval:
         model = loadModel(args.model, args.model_path)
-        #test_loader = createTestDataLoader(args.data_path, args.batch_size, motor_transforms)
+        test_loader = createTestDataLoader(args.data_path, args.batch_size, motor_transforms)
         train_loader, valid_loader = createTrainDataLoader(args.data_path, args.batch_size, motor_transforms,
                                                            args.use_cache)
         print(f'Test size: {len(valid_loader) * args.batch_size}')

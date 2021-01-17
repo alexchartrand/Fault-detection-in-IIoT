@@ -69,7 +69,7 @@ def plot_confusion_matrix(cm, classes, model_name,
     plt.show()
 
 def plotTrainVsValid():
-    model_name = 'LSTM'
+    model_name = 'ResNet'
 
     with open(path.join(ROOT_DIR, SAVED_CURVE_FOLDER, f'{model_name}_learning_curve_nll_train.pkl'), 'rb') as fp:
         learning_curve_nll_train = pickle.load(fp)
