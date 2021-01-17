@@ -50,7 +50,7 @@ class ConvBlock(nn.Module):
         self.conv = Utility.Conv1DSame(in_channels, out_channels, kernel_size)
         self.instanceNorm = nn.InstanceNorm1d(out_channels, affine=True)
         self.activation = nn.PReLU(out_channels)
-        self.dropout = nn.Dropout(0.2)
+        self.dropout = nn.Dropout(0.35)
 
 
     def forward(self, x):
