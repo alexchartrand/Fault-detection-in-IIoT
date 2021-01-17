@@ -11,16 +11,20 @@ class Encoder(nn.Module):
 
         # self.activation = nn.Softmax(dim=1) # This is include in the loss
 
-        self.block1 = ConvBlock(in_feature, 128, 5)
+        self.block1 = ConvBlock(in_feature, 64, 3)
         self.pool1 = nn.MaxPool1d(2)
-        self.block2 = ConvBlock(128, 256, 11)
+        self.block2 = ConvBlock(64, 128, 5)
         self.pool2 = nn.MaxPool1d(2)
-        self.block3 = ConvBlock(256, 512, 21)
+        self.block3 = ConvBlock(128, 256, 11)
+        self.pool3 = nn.MaxPool1d(2)
+        self.block4 = ConvBlock(256, 256, 11)
+        self.pool4 = nn.MaxPool1d(2)
+        self.block5 = ConvBlock(256, 512, 21)
         self.softmax = nn.Softmax(dim=2)
-        self.linear = nn.Linear(256, 256)
+        self.linear = nn.Linear(128, 256)
 
-        self.instanceNorm = nn.InstanceNorm1d(1250, affine=True)
-        self.linearEnd = nn.Linear(256*1250, out_feature)
+        self.instanceNorm = nn.InstanceNorm1d(312, affine=True)
+        self.linearEnd = nn.Linear(256*312, out_feature)
 
     def forward(self, x):
         x = self.block1(x)
@@ -28,6 +32,10 @@ class Encoder(nn.Module):
         x = self.block2(x)
         x = self.pool2(x)
         x = self.block3(x)
+        x = self.pool3(x)
+        x = self.block4(x)
+        x = self.pool4(x)
+        x = self.block4(x)
         x = x.permute(0, 2, 1)
         attentionData, attentionSoftmax = torch.split(x, int(x.shape[2]/2), dim=2)
         attentionSoftmax  = self.softmax(attentionSoftmax)
