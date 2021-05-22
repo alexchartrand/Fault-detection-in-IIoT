@@ -266,11 +266,11 @@ def main(args):
         test_loader = createTestDataLoader(args.data_path, args.batch_size, motor_transforms)
         train_loader, valid_loader = createTrainDataLoader(args.data_path, args.batch_size, motor_transforms,
                                                            args.use_cache)
-        print(f'Test size: {len(valid_loader) * args.batch_size}')
+        print(f'Test size: {len(test_loader) * args.batch_size}')
         # Evaluate model
-        cm = confusionMatrix(model, valid_loader)
+        cm = confusionMatrix(model, test_loader)
         plot_confusion_matrix(cm, list(range(len(FAULT_TYPE))), args.model)
-        test_acc, test_loss = evaluate(model, valid_loader)
+        test_acc, test_loss = evaluate(model, test_loader)
 
         print("Model evaluation ===================")
         print("Test accuracy: ", str(test_acc))

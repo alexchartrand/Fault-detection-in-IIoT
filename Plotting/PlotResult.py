@@ -8,7 +8,7 @@ def plot_curve(acc_train, acc_valid, nll_train, nll_valid, model_name):
     alphaVal = 0.75
     linethick = 2.5
 
-    xticks = list(range(0, len(acc_train), 2))
+    xticks = list(range(0, len(acc_train), 20))
 
     f, axs = plt.subplots(2, 1, sharex='col')
     axs[0].plot(nll_train, label='Train', color=colourWheel[0], alpha=alphaVal, lw=linethick)
@@ -65,11 +65,11 @@ def plot_confusion_matrix(cm, classes, model_name,
     plt.ylabel('True label')
     plt.xlabel('Predicted label')
     plt.tight_layout()
-    plt.savefig(path.join(FIGURE_CLASSIFICATION_FOLDER, f'{model_name}_confusion.png'))
+    plt.savefig(path.join(FIGURE_CLASSIFICATION_FOLDER, f'{model_name}-final_confusion.png'))
     plt.show()
 
 def plotTrainVsValid():
-    model_name = 'ResNet'
+    model_name = 'Encoder-final'
 
     with open(path.join(ROOT_DIR, SAVED_CURVE_FOLDER, f'{model_name}_learning_curve_nll_train.pkl'), 'rb') as fp:
         learning_curve_nll_train = pickle.load(fp)
